@@ -13,12 +13,8 @@ if __name__ == "__main__":
 CONN = sqlite3.connect('wrestling.db')
 CURSOR = CONN.cursor()
 
-
-
-
-
 def create_tables():
-    print("Creating tables...")  # Debugging output
+    print("Creating tables...")
     try:
         connection = sqlite3.connect('wrestling.db')
         cursor = connection.cursor()
