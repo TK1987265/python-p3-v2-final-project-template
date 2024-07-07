@@ -1,6 +1,10 @@
 from helpers import (
     exit_program,
-    helper_1
+    helper_1,
+    add_team,
+    add_wrestler,
+    print_teams,
+    get_all_wrestlers
 )
 
 
@@ -11,7 +15,13 @@ def main():
         if choice == "0":
             exit_program()
         elif choice == "1":
-            helper_1()
+            add_wrestler()
+        elif choice == "3":
+            add_team()
+        elif choice == "2":
+            get_all_wrestlers()
+        elif choice == "4":
+            print_teams()
         else:
             print("Invalid choice")
 
