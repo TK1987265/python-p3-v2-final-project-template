@@ -75,22 +75,25 @@ def get_all_wrestlers():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-      
-        cursor.execute('SELECT * FROM wrestlers')
+        # Join the wrestlers table with the teams table to get team names
+        cursor.execute('''
+            SELECT w.id, w.name, w.weight_class, w.team_id, t.name as team_name 
+            FROM wrestlers w
+            JOIN teams t ON w.team_id = t.id
+        ''')
         wrestlers = cursor.fetchall()
         
-       
+        # Check if any wrestlers were found
         if wrestlers:
             print("List of all wrestlers:")
             for wrestler in wrestlers:
-                print(f"ID: {wrestler['id']}, Name: {wrestler['name']}, Weight Class: {wrestler['weight_class']}, Team ID: {wrestler['team_id']}")
+                print(f"ID: {wrestler['id']}, Name: {wrestler['name']}, Weight Class: {wrestler['weight_class']}, Team ID: {wrestler['team_id']}, Team Name: {wrestler['team_name']}")
         else:
             print("No wrestlers found in the database.")
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
         conn.close()
-
 # Get all wrestlers in a team
 def get_wrestlers_by_team(team_id):
     conn = get_db_connection()
