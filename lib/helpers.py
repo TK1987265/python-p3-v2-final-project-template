@@ -16,18 +16,16 @@ def exit_program():
     exit()
 
 
-# Add a new team to the database
-def add_team():
+# add a new team
+def add_team(name):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # Prompt for the team name within the function
-        team_name = input("Enter the name of the new team: ")
-        cursor.execute('INSERT INTO teams (name) VALUES (?)', (team_name,))
+        cursor.execute('INSERT INTO teams (name) VALUES (?)', (name,))
         conn.commit()
-        print(f"Team '{team_name}' added successfully.")
+        print(f"Team '{name}' added successfully.")
     except sqlite3.IntegrityError:
-        print(f"Team '{team_name}' already exists.")
+        print(f"Team '{name}' already exists.")
     finally:
         conn.close()
 
@@ -71,6 +69,7 @@ def get_teams():
     finally:
         conn.close()
 
+# get all wrestlers
 def get_all_wrestlers():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -94,6 +93,7 @@ def get_all_wrestlers():
         print(f"An error occurred: {e}")
     finally:
         conn.close()
+
 # Get all wrestlers in a team
 def get_wrestlers_by_team(team_id):
     conn = get_db_connection()
@@ -105,8 +105,91 @@ def get_wrestlers_by_team(team_id):
     conn.close()
     return wrestlers
 
-# Example utility to print all teams
+# print all teams
 def print_teams():
     teams = get_teams()
     for team in teams:
         print(f"Team ID: {team['id']}, Name: {team['name']}")
+
+
+# delete wrestler
+def delete_wrestler(wrestler_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM wrestlers WHERE id = ?', (wrestler_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            print("No wrestler found with the specified ID.")
+        else:
+            print("Wrestler deleted successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+
+def delete_team(team_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+       
+        cursor.execute('SELECT * FROM wrestlers WHERE team_id = ?', (team_id,))
+        if cursor.fetchone() is not None:
+            print("Cannot delete team with wrestlers assigned to it.")
+            return
+
+        cursor.execute('DELETE FROM teams WHERE id = ?', (team_id,))
+        conn.commit()
+        if cursor.rowcount == 0:
+            print("No team found with the specified ID.")
+        else:
+            print("Team deleted successfully.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+
+
+def find_wrestler_by_name(name):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # Join with the teams table to get the team name
+        cursor.execute('''
+        SELECT w.id, w.name, w.weight_class, t.name as team_name
+        FROM wrestlers w
+        LEFT JOIN teams t ON w.team_id = t.id
+        WHERE w.name LIKE ?
+        ''', ('%' + name + '%',))
+        wrestlers = cursor.fetchall()
+        if wrestlers:
+            print("Found wrestlers:")
+            for wrestler in wrestlers:
+                print(f"ID: {wrestler['id']}, Name: {wrestler['name']}, Weight Class: {wrestler['weight_class']}, Team Name: {wrestler['team_name']}")
+        else:
+            print("No wrestlers found with the given name.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
+
+def find_team_by_name(name):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('SELECT * FROM teams WHERE name LIKE ?', ('%' + name + '%',))
+        teams = cursor.fetchall()
+        if teams:
+            print("Found teams:")
+            for team in teams:
+                print(f"ID: {team['id']}, Name: {team['name']}")
+        else:
+            print("No teams found with the given name.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        conn.close()
+
